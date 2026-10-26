@@ -1,5 +1,5 @@
 import { ImageOff } from 'lucide-react'
-import { useState, type ImgHTMLAttributes } from 'react'
+import { useEffect, useRef, useState, type ImgHTMLAttributes } from 'react'
 import { unsplashSrcSet } from '../../config/images'
 
 interface SmartImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onError'> {
@@ -9,6 +9,7 @@ interface SmartImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onE
   fallbackSrc?: string
   /** Hint for the browser about rendered width, e.g. "(min-width:1024px) 33vw, 100vw" */
   sizes?: string
+  /** Load straight away (for photos at the top of the page). Shown without a fade. */
   priority?: boolean
 }
 
@@ -26,9 +27,17 @@ export function SmartImage({
   className = '',
   ...rest
 }: SmartImageProps) {
+  const ref = useRef<HTMLImageElement>(null)
   const [current, setCurrent] = useState(src)
   const [failed, setFailed] = useState(false)
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(priority)
+
+  // The photo may finish downloading before the page's JavaScript starts.
+  // In that case the "load" event has already happened, so check it here.
+  useEffect(() => {
+    const img = ref.current
+    if (img?.complete && img.naturalWidth > 0) setLoaded(true)
+  }, [current])
 
   if (failed) {
     return (
@@ -45,19 +54,20 @@ export function SmartImage({
   return (
     <img
       {...rest}
+      ref={ref}
       src={current}
       srcSet={unsplashSrcSet(current)}
       sizes={sizes}
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : 'auto'}
       onLoad={() => setLoaded(true)}
       onError={() => {
         if (fallbackSrc && current !== fallbackSrc) setCurrent(fallbackSrc)
         else setFailed(true)
       }}
-      className={`bg-navy-800 object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      className={`bg-navy-800 object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
     />
   )
 }

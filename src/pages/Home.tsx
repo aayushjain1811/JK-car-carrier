@@ -1,3 +1,4 @@
+import { IMAGES } from '../config/images'
 import { FAQS } from '../data/faqs'
 import { faqLd, organizationLd, Seo } from '../seo/Seo'
 import { About } from '../sections/About'
@@ -20,6 +21,7 @@ export default function Home() {
         title="Car Transport Services in India | Car Carrier — JK Car Carrier"
         description="JK Car Carrier: door-to-door, intercity, enclosed and luxury car transport across India on car carrier trucks. Get a free car transport quote on WhatsApp."
         jsonLd={[organizationLd(), faqLd(HOME_FAQS)]}
+        preloadImage={{ src: IMAGES.hero }}
       />
       <Hero />
       <Services />

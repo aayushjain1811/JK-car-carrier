@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect } from 'react'
+import { unsplashSrcSet } from '../config/images'
 import { BRAND, CONTACT, SITE_URL } from '../config/site'
 
 export interface SeoData {
@@ -9,6 +10,8 @@ export interface SeoData {
   /** Structured data objects (schema.org) */
   jsonLd?: object[]
   noindex?: boolean
+  /** Main photo at the top of the page: the browser starts downloading it immediately. */
+  preloadImage?: { src: string; sizes?: string }
 }
 
 /** During prerendering the server passes a collector; in the browser this is null. */
@@ -37,6 +40,14 @@ export function renderHeadTags(d: SeoData): string {
   if (url) {
     tags.push(`<link rel="canonical" href="${esc(url)}" data-seo>`)
     tags.push(`<meta property="og:url" content="${esc(url)}" data-seo>`)
+  }
+  if (d.preloadImage) {
+    const srcset = unsplashSrcSet(d.preloadImage.src)
+    tags.push(
+      `<link rel="preload" as="image" href="${esc(d.preloadImage.src)}"${
+        srcset ? ` imagesrcset="${esc(srcset)}" imagesizes="${esc(d.preloadImage.sizes ?? '100vw')}"` : ''
+      } fetchpriority="high" data-seo>`,
+    )
   }
   for (const j of d.jsonLd ?? []) tags.push(`<script type="application/ld+json" data-seo>${jsonForScript(j)}</script>`)
   return tags.join('\n    ')

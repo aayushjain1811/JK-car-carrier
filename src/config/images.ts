@@ -6,11 +6,11 @@
  * Current images are free photos from Unsplash (Unsplash License).
  */
 const unsplash = (id: string, w = 1200) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=72`
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=60`
 
 export const unsplashSrcSet = (url: string) => {
   if (!url.includes('images.unsplash.com')) return undefined
-  return [480, 800, 1200, 1800]
+  return [360, 640, 960, 1280, 1920]
     .map((w) => `${url.replace(/w=\d+/, `w=${w}`)} ${w}w`)
     .join(', ')
 }
